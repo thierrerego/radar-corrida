@@ -1,0 +1,22 @@
+{
+  "_sobre": "Agenda inicial: PALPITES de horários com movimento. Ajuste pelo app (aba Agenda) conforme você for vendo na rua. dias: 0=dom, 1=seg ... 6=sáb.",
+  "itens": [
+    { "id": "ufob-noite",   "nome": "Saída das aulas - UFOB",            "lat": -12.14839, "lon": -45.02052, "dias": [1,2,3,4,5],       "inicio": "17:40", "fim": "18:30", "nota": "Palpite: fim das aulas da tarde." },
+    { "id": "ufob-noite2",  "nome": "Saída das aulas - UFOB (noite)",    "lat": -12.14839, "lon": -45.02052, "dias": [1,2,3,4,5],       "inicio": "21:50", "fim": "22:40", "nota": "Palpite: fim do turno da noite." },
+    { "id": "ifba-saida",   "nome": "Saída das aulas - IFBA",            "lat": -12.15214, "lon": -45.00599, "dias": [1,2,3,4,5],       "inicio": "21:50", "fim": "22:30", "nota": "Palpite." },
+    { "id": "uneb-saida",   "nome": "Saída das aulas - UNEB",            "lat": -12.14295, "lon": -44.96261, "dias": [1,2,3,4,5],       "inicio": "21:50", "fim": "22:40", "nota": "Palpite." },
+    { "id": "fasb-saida",   "nome": "Saída das aulas - FASB",            "lat": -12.17458, "lon": -45.01151, "dias": [1,2,3,4,5],       "inicio": "21:50", "fim": "22:40", "nota": "Palpite. Fica longe do centro: corrida costuma ser mais longa." },
+    { "id": "fac-manha",    "nome": "Entrada das aulas (faculdades)",    "lat": -12.14774, "lon": -44.99471, "dias": [1,2,3,4,5],       "inicio": "06:40", "fim": "07:40", "nota": "Palpite: gente indo pra aula de manhã." },
+    { "id": "hosp-oeste",   "nome": "Troca de turno - Hospital do Oeste","lat": -12.12553, "lon": -45.00039, "dias": [0,1,2,3,4,5,6], "inicio": "18:45", "fim": "19:30", "nota": "Palpite: plantão das 19h." },
+    { "id": "hosp-oeste-m", "nome": "Troca de turno - Hospital do Oeste (manhã)","lat": -12.12553, "lon": -45.00039, "dias": [0,1,2,3,4,5,6], "inicio": "06:45", "fim": "07:30", "nota": "Palpite: plantão das 7h." },
+    { "id": "centro-saida", "nome": "Fechamento do comércio - Centro",   "lat": -12.14680, "lon": -44.99681, "dias": [1,2,3,4,5],       "inicio": "17:45", "fim": "18:45", "nota": "Palpite: lojas fechando, gente voltando pra casa." },
+    { "id": "centro-sab",   "nome": "Sábado de manhã - Centro",          "lat": -12.14680, "lon": -44.99681, "dias": [6],               "inicio": "09:00", "fim": "13:00", "nota": "Palpite: compras no sábado." },
+    { "id": "atacados-sab", "nome": "Compras - Assaí e Atacadão",        "lat": -12.14234, "lon": -44.98043, "dias": [5,6],             "inicio": "09:00", "fim": "13:00", "nota": "Palpite: compra do mês, gente com sacola volta de carro." },
+    { "id": "atacados-tarde","nome": "Compras fim de tarde - atacados",  "lat": -12.14017, "lon": -44.96285, "dias": [1,2,3,4,5],       "inicio": "17:30", "fim": "20:00", "nota": "Palpite." },
+    { "id": "rodoviaria",   "nome": "Chegada de ônibus - Rodoviária",    "lat": -12.12699, "lon": -45.01832, "dias": [0,1,2,3,4,5,6], "inicio": "05:00", "fim": "07:30", "nota": "PALPITE. Confira os horários reais de chegada das empresas e ajuste aqui." },
+    { "id": "aeroporto",    "nome": "Chegada de voo - Aeroporto",        "lat": -12.07948, "lon": -45.00971, "dias": [0,1,2,3,4,5,6], "inicio": "00:00", "fim": "00:00", "nota": "PREENCHA: coloque o horário dos voos que chegam (veja no site da companhia). Corrida longa e boa." },
+    { "id": "castro-noite", "nome": "Noite de fim de semana - Centro/orla","lat": -12.14787, "lon": -44.99754, "dias": [5,6],           "inicio": "22:30", "fim": "02:30", "nota": "Palpite: saída de bares e festas." },
+    { "id": "domingo-noite","nome": "Domingo à noite - volta pra casa",  "lat": -12.14787, "lon": -44.99754, "dias": [0],               "inicio": "19:00", "fim": "22:00", "nota": "Palpite." },
+    { "id": "parque-expo",  "nome": "Eventos - Parque de Exposições",    "lat": -12.14123, "lon": -44.99941, "dias": [],                "inicio": "22:00", "fim": "03:00", "nota": "Sem dia fixo: marque os dias quando tiver show ou feira." }
+  ]
+}

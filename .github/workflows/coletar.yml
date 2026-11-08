@@ -1,0 +1,36 @@
+name: Coletar trânsito
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'   # de 30 em 30 min (minutos 07 e 37, horário UTC)
+  workflow_dispatch:          # botão pra rodar na mão
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coletar
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Medir os pontos no TomTom
+        env:
+          TOMTOM_KEY: ${{ secrets.TOMTOM_KEY }}
+        run: node coletor/coletar.mjs
+      - name: Guardar no repo
+        run: |
+          git config user.name "radar-robo"
+          git config user.email "radar-robo@users.noreply.github.com"
+          git add dados/
+          git diff --cached --quiet && exit 0
+          git commit -m "Coleta de trânsito $(TZ=America/Bahia date '+%d/%m %H:%M')"
+          git pull --rebase --quiet
+          git push

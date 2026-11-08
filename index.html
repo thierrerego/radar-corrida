@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Corrida</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<style>
+:root {
+  --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1b; --ink2: #55524c; --muted: #8a867e;
+  --line: #e4e1da; --accent: #d9620b; --accent-ink: #ffffff;
+  --bom: #1f8a4c; --medio: #b7791f; --fraco: #8a867e;
+  --vazio: #ecebe7;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151514; --card: #1f1f1d; --ink: #f1efe9; --ink2: #c4c0b7; --muted: #8f8b83;
+    --line: #34332f; --accent: #f08a3c; --accent-ink: #1d1d1b;
+    --bom: #4cc27f; --medio: #e0a548; --fraco: #8f8b83; --vazio: #2a2a27;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 1000; }
+header h1 { font-size: 18px; margin: 0; flex: 1; }
+header h1 span { color: var(--accent); }
+nav { display: flex; gap: 4px; padding: 8px 16px; background: var(--card); border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav button { border: 0; background: none; color: var(--ink2); padding: 8px 12px; border-radius: 8px; font: inherit; cursor: pointer; white-space: nowrap; }
+nav button.ativo { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+section { display: none; }
+section.ativo { display: block; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card h2 { font-size: 16px; margin: 0 0 8px; }
+.sub { color: var(--muted); font-size: 13px; }
+.mapa { height: 420px; border-radius: 10px; border: 1px solid var(--line); }
+.mapa.peq { height: 300px; }
+.linha { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 14px; border-radius: 8px; font: inherit; cursor: pointer; }
+.btn.forte { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: default; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } .mapa { height: 340px; } }
+.veredito { display: flex; gap: 14px; align-items: center; }
+.selo { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 999px; color: #fff; white-space: nowrap; }
+.selo.bom { background: var(--bom); } .selo.medio { background: var(--medio); } .selo.fraco { background: var(--fraco); }
+.veredito p { margin: 0; }
+ol, ul { margin: 6px 0 0; padding-left: 20px; }
+li { margin: 4px 0; }
+.barra { display: inline-block; height: 8px; border-radius: 4px; background: var(--accent); vertical-align: middle; margin-left: 6px; }
+.tabela-wrap { overflow-x: auto; }
+table.grade { border-collapse: separate; border-spacing: 2px; font-size: 11px; }
+table.grade th { color: var(--muted); font-weight: 500; padding: 2px 4px; }
+table.grade td { width: 26px; height: 24px; border-radius: 4px; background: var(--vazio); cursor: pointer; }
+table.grade td.sel { outline: 2px solid var(--ink); outline-offset: -1px; }
+.legenda { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legenda .rampa { width: 140px; height: 10px; border-radius: 5px; }
+#dica { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 8px; border-radius: 6px; font-size: 12px; z-index: 2000; display: none; }
+.item-agenda { border-top: 1px solid var(--line); padding: 10px 0; display: flex; gap: 10px; align-items: flex-start; }
+.item-agenda:first-child { border-top: 0; }
+.item-agenda .txt { flex: 1; }
+.item-agenda b { display: block; }
+.agora-tag { font-size: 11px; background: var(--bom); color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+form.edit label { display: block; margin: 8px 0 2px; font-size: 13px; color: var(--ink2); }
+form.edit input[type=text], form.edit input[type=time], form.edit input[type=password] { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; }
+.dias label { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; color: var(--ink); }
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); max-width: 460px; width: calc(100% - 32px); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.aviso { background: color-mix(in srgb, var(--medio) 15%, transparent); border: 1px solid var(--medio); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Radar <span>Corrida</span> · Barreiras</h1>
+  <button class="btn" id="btnConfig" title="Configurações">⚙ Chave TomTom</button>
+</header>
+<nav>
+  <button data-aba="agora" class="ativo">Agora</button>
+  <button data-aba="horarios">Melhores horários</button>
+  <button data-aba="agenda">Agenda</button>
+</nav>
+<main>
+  <!-- ===== AGORA ===== -->
+  <section id="agora" class="ativo">
+    <div id="semChave" class="aviso" hidden>Falta a chave do TomTom. Clique em <b>⚙ Chave TomTom</b> lá em cima pra ver o trânsito ao vivo.</div>
+    <div class="card">
+      <div class="veredito">
+        <span class="selo fraco" id="selo">…</span>
+        <div><p id="vereditoTxt">Calculando…</p><p class="sub" id="vereditoSub"></p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="linha" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Mapa de calor ao vivo</h2>
+        <div class="linha">
+          <label class="sub"><input type="checkbox" id="chkTiles" checked> linhas de trânsito</label>
+          <button class="btn forte" id="btnMedir">Medir agora</button>
+        </div>
+      </div>
+      <div id="mapaAgora" class="mapa"></div>
+      <p class="sub" id="medicaoInfo">Clique em "Medir agora" pra consultar os 30 pontos (gasta 30 das 2.500 consultas grátis do dia).</p>
+    </div>
+    <div class="grid2">
+      <div class="card"><h2>Onde está mais movimentado</h2><ol id="top5"><li class="sub">Ainda não medido.</li></ol></div>
+      <div class="card"><h2>Na agenda (agora e próximas 2h)</h2><ul id="agendaAgora"></ul></div>
+    </div>
+  </section>
+
+  <!-- ===== HORÁRIOS ===== -->
+  <section id="horarios">
+    <div class="card">
+      <h2>Movimento médio por dia e hora</h2>
+      <p class="sub" id="histInfo">Carregando o histórico…</p>
+      <div class="tabela-wrap"><table class="grade" id="grade"></table></div>
+      <div class="legenda">menos movimento <span class="rampa" id="rampa"></span> mais movimento · cinza = sem dados</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h2 id="selTitulo">Clique num quadradinho da grade</h2>
+        <div id="mapaHist" class="mapa peq"></div>
+      </div>
+      <div class="card">
+        <h2>Pontos mais movimentados nesse horário</h2>
+        <ol id="rankHist"><li class="sub">Escolha um dia e hora na grade.</li></ol>
+        <h2 style="margin-top:16px">Melhores janelas da semana</h2>
+        <ol id="melhores"></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AGENDA ===== -->
+  <section id="agenda">
+    <div class="grid2">
+      <div class="card">
+        <div class="linha" style="justify-content:space-between">
+          <h2 style="margin:0">Pontos e horários</h2>
+          <div class="linha">
+            <button class="btn" id="btnNovo">+ Novo</button>
+            <button class="btn" id="btnExportar" title="Baixa a agenda pra guardar no projeto">Baixar</button>
+            <button class="btn" id="btnRestaurar">Restaurar padrão</button>
+          </div>
+        </div>
+        <p class="sub">Os horários iniciais são palpites. Ajuste conforme você for vendo na rua.</p>
+        <div id="listaAgenda"></div>
+      </div>
+      <div class="card">
+        <h2 id="formTitulo">Editar</h2>
+        <form class="edit" id="formAgenda" hidden>
+          <label>Nome</label><input type="text" id="fNome" required>
+          <label>Dias</label>
+          <div class="dias" id="fDias"></div>
+          <div class="linha">
+            <div style="flex:1"><label>Começa</label><input type="time" id="fInicio" required></div>
+            <div style="flex:1"><label>Termina</label><input type="time" id="fFim" required></div>
+          </div>
+          <label>Observação</label><input type="text" id="fNota">
+          <label>Local (clique no mapa pra mudar)</label>
+          <div id="mapaAgenda" class="mapa peq"></div>
+          <div class="linha" style="margin-top:12px">
+            <button class="btn forte" type="submit">Salvar</button>
+            <button class="btn" type="button" id="btnApagar">Apagar</button>
+            <button class="btn" type="button" id="btnCancelar">Cancelar</button>
+          </div>
+        </form>
+        <p class="sub" id="formVazio">Escolha um item da lista ou clique em "+ Novo".</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlgConfig">
+  <form method="dialog" class="edit">
+    <h2 style="margin-top:0">Chave do TomTom</h2>
+    <p class="sub">Crie uma conta grátis em developer.tomtom.com, copie a "API Key" e cole aqui. Ela fica guardada só neste navegador.</p>
+    <label>API Key</label><input type="password" id="cfgChave" autocomplete="off">
+    <div class="linha" style="margin-top:12px"><button class="btn forte" value="salvar">Salvar</button><button class="btn" value="cancelar">Cancelar</button></div>
+  </form>
+</dialog>
+<div id="dica"></div>
+
+<script>
+// ---------- utilidades ----------
+const CENTRO = [-12.1420, -44.9990];
+const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const DIAS_LONGO = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const $ = s => document.querySelector(s);
+const ls = {
+  get(k, padrao) { try { const v = localStorage.getItem(k); return v === null ? padrao : JSON.parse(v); } catch { return padrao; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// movimento de 0 a 1: 0 = rua livre, 1 = metade da velocidade normal (ou pior)
+function movimento(vel, livre) {
+  if (!livre || vel == null) return null;
+  return Math.max(0, Math.min(1, (1 - vel / livre) / 0.5));
+}
+// rampa de uma cor só (laranja), clara -> escura
+const RAMPA = ['#fde6d2', '#f9c08f', '#f08a3c', '#d9620b', '#a8470a', '#6e2e05'];
+function corDe(t) {
+  t = Math.max(0, Math.min(1, t)) * (RAMPA.length - 1);
+  const i = Math.min(Math.floor(t), RAMPA.length - 2), f = t - i;
+  const a = parseInt(RAMPA[i].slice(1), 16), b = parseInt(RAMPA[i + 1].slice(1), 16);
+  const mix = sh => Math.round(((a >> sh) & 255) * (1 - f) + ((b >> sh) & 255) * f);
+  return `rgb(${mix(16)},${mix(8)},${mix(0)})`;
+}
+const GRADIENTE_CALOR = { 0.2: RAMPA[1], 0.45: RAMPA[2], 0.7: RAMPA[3], 0.9: RAMPA[4], 1: RAMPA[5] };
+$('#rampa').style.background = `linear-gradient(90deg, ${RAMPA.join(',')})`;
+const minutos = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+
+function novoMapa(id) {
+  const m = L.map(id, { zoomControl: true }).setView(CENTRO, 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18, attribution: '© OpenStreetMap'
+  }).addTo(m);
+  return m;
+}
+
+// ---------- abas ----------
+const mapas = {};
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('ativo', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('ativo', s.id === b.dataset.aba));
+  setTimeout(() => {
+    Object.values(mapas).forEach(m => m.invalidateSize());
+    if (b.dataset.aba === 'horarios' && hist && celulaSel) selecionarCelula(...celulaSel);
+  }, 50);
+  history.replaceState(null, '', '#' + b.dataset.aba);
+});
+
+// ---------- configuração ----------
+let chave = ls.get('radar.chave', '');
+$('#btnConfig').onclick = () => { $('#cfgChave').value = chave; $('#dlgConfig').showModal(); };
+$('#dlgConfig').addEventListener('close', () => {
+  if ($('#dlgConfig').returnValue === 'salvar') {
+    chave = $('#cfgChave').value.trim();
+    ls.set('radar.chave', chave);
+    atualizarCamadaTrafego();
+    $('#semChave').hidden = !!chave;
+  }
+});
+$('#semChave').hidden = !!chave;
+
+// ---------- dados base ----------
+let PONTOS = [];
+let agendaPadrao = [];
+let agenda = [];
+
+async function carregarJSON(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(url + ': ' + r.status);
+  return r.json();
+}
+
+// ---------- AGORA ----------
+mapas.agora = novoMapa('mapaAgora');
+let camadaTrafego = null, camadaCalorAgora = null, camadaPontosAgora = L.layerGroup().addTo(mapas.agora);
+let ultimaMedicao = null;
+
+function atualizarCamadaTrafego() {
+  if (camadaTrafego) { mapas.agora.removeLayer(camadaTrafego); camadaTrafego = null; }
+  if (chave && $('#chkTiles').checked) {
+    camadaTrafego = L.tileLayer(`https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${encodeURIComponent(chave)}`, {
+      opacity: 0.85, maxZoom: 18, attribution: 'Trânsito © TomTom'
+    }).addTo(mapas.agora);
+  }
+}
+$('#chkTiles').onchange = atualizarCamadaTrafego;
+
+async function medirPonto(p) {
+  const url = `https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/12/json?point=${p.lat},${p.lon}&unit=KMPH&key=${encodeURIComponent(chave)}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('TomTom respondeu ' + r.status);
+  const f = (await r.json()).flowSegmentData;
+  return { ...p, vel: f.currentSpeed, livre: f.freeFlowSpeed, conf: f.confidence, mov: movimento(f.currentSpeed, f.freeFlowSpeed) };
+}
+
+$('#btnMedir').onclick = async () => {
+  if (!chave) { $('#btnConfig').click(); return; }
+  const btn = $('#btnMedir');
+  btn.disabled = true; btn.textContent = 'Medindo…';
+  const res = [];
+  let erro = null;
+  for (let i = 0; i < PONTOS.length; i += 5) {
+    const lote = await Promise.allSettled(PONTOS.slice(i, i + 5).map(medirPonto));
+    lote.forEach(x => x.status === 'fulfilled' ? res.push(x.value) : (erro = x.reason));
+  }
+  btn.disabled = false; btn.textContent = 'Medir agora';
+  if (!res.length) { $('#medicaoInfo').textContent = 'Não consegui medir: ' + (erro?.message || 'erro desconhecido') + '. Confira a chave.'; return; }
+  ultimaMedicao = { quando: new Date(), pontos: res };
+  desenharAgora();
+  $('#medicaoInfo').textContent = `Medido às ${ultimaMedicao.quando.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${res.length} de ${PONTOS.length} pontos` + (erro ? ' (alguns falharam)' : '') + '.';
+  atualizarVeredito();
+};
+
+function desenharAgora() {
+  const pts = ultimaMedicao.pontos;
+  if (camadaCalorAgora) mapas.agora.removeLayer(camadaCalorAgora);
+  camadaCalorAgora = L.heatLayer(pts.map(p => [p.lat, p.lon, Math.max(0.05, p.mov ?? 0)]),
+    { radius: 40, blur: 30, max: 1, minOpacity: 0.25, gradient: GRADIENTE_CALOR }).addTo(mapas.agora);
+  camadaPontosAgora.clearLayers();
+  pts.forEach(p => L.circleMarker([p.lat, p.lon], { radius: 6, weight: 2, color: '#fff', fillColor: corDe(p.mov ?? 0), fillOpacity: 1 })
+    .bindTooltip(`<b>${esc(p.nome)}</b><br>${Math.round(p.vel)} km/h (normal ${Math.round(p.livre)} km/h)<br>Movimento: ${Math.round((p.mov ?? 0) * 100)}%`)
+    .addTo(camadaPontosAgora));
+  const top = [...pts].sort((a, b) => (b.mov ?? 0) - (a.mov ?? 0)).slice(0, 5);
+  $('#top5').innerHTML = top.map(p => `<li>${esc(p.nome)} — ${Math.round((p.mov ?? 0) * 100)}%<span class="barra" style="width:${Math.round((p.mov ?? 0) * 80)}px"></span></li>`).join('');
+}
+
+// ---------- agenda: o que está rolando ----------
+// devolve minutos até começar (0 se já está rolando), ou null se não acontece nas próximas `janela` minutos
+function statusAgenda(item, agora = new Date(), janela = 120) {
+  if (!item.dias?.length || item.inicio === item.fim) return null;
+  const ini = minutos(item.inicio), fim = minutos(item.fim);
+  const dur = (fim - ini + 1440) % 1440;
+  const nowMin = agora.getHours() * 60 + agora.getMinutes();
+  const hoje = agora.getDay();
+  // confere ocorrências que começaram ontem, hoje ou amanhã
+  for (const desloc of [-1, 0, 1]) {
+    const dia = (hoje + desloc + 7) % 7;
+    if (!item.dias.includes(dia)) continue;
+    const comeco = desloc * 1440 + ini;
+    const diff = comeco - nowMin;
+    if (diff <= 0 && -diff < dur) return 0;
+    if (diff > 0 && diff <= janela) return diff;
+  }
+  return null;
+}
+
+function desenharAgendaAgora() {
+  const lista = agenda.map(i => ({ i, s: statusAgenda(i) })).filter(x => x.s !== null).sort((a, b) => a.s - b.s);
+  $('#agendaAgora').innerHTML = lista.length
+    ? lista.map(({ i, s }) => `<li>${esc(i.nome)} ${s === 0 ? '<span class="agora-tag">AGORA</span>' : `<span class="sub">em ${s} min</span>`}<br><span class="sub">${esc(i.inicio)}–${esc(i.fim)} · ${esc(i.nota || '')}</span></li>`).join('')
+    : '<li class="sub">Nada na agenda pras próximas 2 horas.</li>';
+  return lista;
+}
+
+// ---------- veredito ----------
+function atualizarVeredito() {
+  const ag = desenharAgendaAgora();
+  const agoraAg = ag.filter(x => x.s === 0).length;
+  const agora = new Date();
+  const motivos = [];
+  let pontos = 0;
+
+  if (agoraAg) { pontos += 1; motivos.push(`${agoraAg} item(ns) da agenda rolando agora`); }
+  if (ultimaMedicao) {
+    const top = [...ultimaMedicao.pontos].sort((a, b) => (b.mov ?? 0) - (a.mov ?? 0)).slice(0, 5);
+    const media = top.reduce((s, p) => s + (p.mov ?? 0), 0) / top.length;
+    if (media >= 0.3) { pontos += 1; motivos.push(`trânsito puxado nos pontos mais cheios (${Math.round(media * 100)}%)`); }
+    else motivos.push(`trânsito tranquilo agora (${Math.round(media * 100)}%)`);
+  }
+  if (hist) {
+    const c = hist.celula[agora.getDay()][agora.getHours()];
+    if (c.n) {
+      const nv = nivelHist(c.media);
+      if (nv >= 0.6) { pontos += 1; motivos.push(`esse horário costuma ser dos mais movimentados da semana`); }
+      else motivos.push(`esse horário costuma ser ${nv >= 0.3 ? 'médio' : 'fraco'}`);
+    }
+  }
+
+  const selo = $('#selo');
+  if (pontos >= 2) { selo.className = 'selo bom'; selo.textContent = 'Vale sair'; $('#vereditoTxt').textContent = 'Bom momento pra sair de casa.'; }
+  else if (pontos === 1) { selo.className = 'selo medio'; selo.textContent = 'Talvez'; $('#vereditoTxt').textContent = 'Pode valer, mas não está no pico.'; }
+  else { selo.className = 'selo fraco'; selo.textContent = 'Fraco'; $('#vereditoTxt').textContent = 'Movimento fraco agora.'; }
+
+  const prox = proximaJanelaBoa(agora);
+  $('#vereditoSub').textContent = (motivos.length ? motivos.join(' · ') : 'Meça o trânsito e preencha a agenda pra ter uma resposta melhor.')
+    + (prox ? ` · Próximo horário forte: ${prox}.` : '');
+}
+
+// ---------- HISTÓRICO ----------
+let hist = null;
+let todosValores = [];
+// onde esse valor fica entre o horário mais fraco (0) e o mais forte (1) da semana
+function nivelHist(v) {
+  if (!todosValores.length) return 0;
+  const min = todosValores[0], max = todosValores[todosValores.length - 1];
+  return max > min ? (v - min) / (max - min) : 0.5;
+}
+
+async function carregarHistorico() {
+  let indice;
+  try { indice = await carregarJSON('dados/indice.json'); }
+  catch { $('#histInfo').textContent = 'Ainda não tem histórico. Quando o robô começar a rodar, os dados aparecem aqui (leva umas 2 semanas pra ficar confiável).'; return; }
+  const celula = [...Array(7)].map(() => [...Array(24)].map(() => ({ soma: 0, n: 0, porPonto: {} })));
+  const diasVistos = new Set();
+  let linhas = 0;
+  for (const arq of indice.arquivos || []) {
+    let txt;
+    try { const r = await fetch('dados/' + arq, { cache: 'no-store' }); if (!r.ok) continue; txt = await r.text(); } catch { continue; }
+    for (const l of txt.split('\n')) {
+      // quando,ponto,vel,vel_livre,confianca  (quando = 2026-11-08T14:30-03:00, horário de Barreiras)
+      const [quando, ponto, vel, livre, conf] = l.split(',');
+      if (!quando || quando === 'quando' || +conf < 0.5) continue;
+      const mov = movimento(+vel, +livre);
+      if (mov === null) continue;
+      const [y, mo, d] = quando.slice(0, 10).split('-').map(Number);
+      const dia = new Date(Date.UTC(y, mo - 1, d)).getUTCDay();
+      const hora = +quando.slice(11, 13);
+      const c = celula[dia][hora];
+      c.soma += mov; c.n++;
+      const pp = c.porPonto[ponto] ||= { soma: 0, n: 0 };
+      pp.soma += mov; pp.n++;
+      diasVistos.add(quando.slice(0, 10));
+      linhas++;
+    }
+  }
+  if (!linhas) { $('#histInfo').textContent = 'O histórico ainda está vazio.'; return; }
+  celula.forEach(d => d.forEach(c => c.media = c.n ? c.soma / c.n : null));
+  todosValores = celula.flat().filter(c => c.n).map(c => c.media).sort((a, b) => a - b);
+  hist = { celula, dias: diasVistos.size, linhas };
+  $('#histInfo').textContent = `${linhas.toLocaleString('pt-BR')} medições em ${diasVistos.size} dia(s).` + (diasVistos.size < 14 ? ' Ainda é pouco: com 2 semanas ou mais fica mais confiável.' : '');
+  desenharGrade();
+  desenharMelhores();
+  atualizarVeredito();
+}
+
+function desenharGrade() {
+  const t = $('#grade');
+  const min = todosValores[0], max = todosValores[todosValores.length - 1] || 1;
+  const norm = v => max > min ? (v - min) / (max - min) : 0.5;
+  let h = '<tr><th></th>' + [...Array(24)].map((_, i) => `<th>${i}</th>`).join('') + '</tr>';
+  for (let d = 0; d < 7; d++) {
+    h += `<tr><th>${DIAS[d]}</th>`;
+    for (let hr = 0; hr < 24; hr++) {
+      const c = hist.celula[d][hr];
+      h += `<td data-d="${d}" data-h="${hr}" style="${c.n ? `background:${corDe(norm(c.media))}` : ''}"></td>`;
+    }
+    h += '</tr>';
+  }
+  t.innerHTML = h;
+  const dica = $('#dica');
+  t.querySelectorAll('td').forEach(td => {
+    const d = +td.dataset.d, hr = +td.dataset.h, c = hist.celula[d][hr];
+    td.onmousemove = e => {
+      dica.style.display = 'block';
+      dica.style.left = (e.clientX + 12) + 'px'; dica.style.top = (e.clientY + 12) + 'px';
+      dica.innerHTML = `${DIAS_LONGO[d]}, ${hr}h–${hr + 1}h<br>` + (c.n ? `movimento ${Math.round(c.media * 100)}% · ${c.n} medições` : 'sem dados');
+    };
+    td.onmouseleave = () => dica.style.display = 'none';
+    td.onclick = () => selecionarCelula(d, hr);
+  });
+  const agora = new Date();
+  selecionarCelula(agora.getDay(), agora.getHours());
+}
+
+mapas.hist = novoMapa('mapaHist');
+let camadaCalorHist = null, celulaSel = null;
+function selecionarCelula(d, hr) {
+  document.querySelectorAll('#grade td.sel').forEach(x => x.classList.remove('sel'));
+  document.querySelector(`#grade td[data-d="${d}"][data-h="${hr}"]`)?.classList.add('sel');
+  $('#selTitulo').textContent = `${DIAS_LONGO[d][0].toUpperCase() + DIAS_LONGO[d].slice(1)}, ${hr}h às ${hr + 1}h`;
+  const c = hist.celula[d][hr];
+  const lista = PONTOS.map(p => { const pp = c.porPonto[p.id]; return { ...p, mov: pp ? pp.soma / pp.n : null }; }).filter(p => p.mov !== null);
+  celulaSel = [d, hr];
+  if (camadaCalorHist) { mapas.hist.removeLayer(camadaCalorHist); camadaCalorHist = null; }
+  // o mapa de calor quebra se o mapa estiver escondido (tamanho zero); redesenha quando a aba abrir
+  if (mapas.hist.getSize().x > 0) {
+    camadaCalorHist = L.heatLayer(lista.map(p => [p.lat, p.lon, Math.max(0.05, p.mov)]),
+      { radius: 35, blur: 28, max: 1, minOpacity: 0.25, gradient: GRADIENTE_CALOR }).addTo(mapas.hist);
+  }
+  const top = lista.sort((a, b) => b.mov - a.mov).slice(0, 8);
+  $('#rankHist').innerHTML = top.length ? top.map(p => `<li>${esc(p.nome)} — ${Math.round(p.mov * 100)}%<span class="barra" style="width:${Math.round(p.mov * 80)}px"></span></li>`).join('') : '<li class="sub">Sem dados nesse horário.</li>';
+}
+
+function desenharMelhores() {
+  const todas = [];
+  for (let d = 0; d < 7; d++) for (let h = 0; h < 24; h++) { const c = hist.celula[d][h]; if (c.n) todas.push({ d, h, m: c.media }); }
+  todas.sort((a, b) => b.m - a.m);
+  $('#melhores').innerHTML = todas.slice(0, 8).map(x => `<li>${DIAS_LONGO[x.d]}, ${x.h}h — ${Math.round(x.m * 100)}%</li>`).join('');
+}
+
+function proximaJanelaBoa(agora) {
+  if (!hist || todosValores.length < 10) return null;
+  for (let i = 1; i <= 24; i++) {
+    const t = new Date(agora.getTime() + i * 3600e3);
+    const c = hist.celula[t.getDay()][t.getHours()];
+    if (c.n && nivelHist(c.media) >= 0.6)return `${DIAS_LONGO[t.getDay()]} às ${t.getHours()}h`;
+  }
+  return null;
+}
+
+// ---------- AGENDA (editar) ----------
+mapas.agenda = novoMapa('mapaAgenda');
+let marcadorAgenda = null, editando = null;
+const marcadoresAgendaAgora = L.layerGroup().addTo(mapas.agora);
+
+function salvarAgenda() { ls.set('radar.agenda', agenda); desenharListaAgenda(); atualizarVeredito(); desenharMarcadoresAgenda(); }
+
+function desenharMarcadoresAgenda() {
+  marcadoresAgendaAgora.clearLayers();
+  agenda.forEach(i => {
+    const s = statusAgenda(i);
+    if (s === null) return;
+    L.marker([i.lat, i.lon]).bindTooltip(`${esc(i.nome)}<br>${s === 0 ? 'AGORA' : 'em ' + s + ' min'}`).addTo(marcadoresAgendaAgora);
+  });
+}
+
+function desenharListaAgenda() {
+  const ordem = [...agenda].sort((a, b) => a.inicio.localeCompare(b.inicio));
+  $('#listaAgenda').innerHTML = ordem.map(i => {
+    const dias = i.dias?.length ? (i.dias.length === 7 ? 'todo dia' : i.dias.map(d => DIAS[d]).join(', ')) : 'sem dia marcado';
+    const s = statusAgenda(i);
+    return `<div class="item-agenda"><div class="txt"><b>${esc(i.nome)}${s === 0 ? '<span class="agora-tag">AGORA</span>' : ''}</b>
+      <span class="sub">${esc(i.inicio)}–${esc(i.fim)} · ${dias}</span><br><span class="sub">${esc(i.nota || '')}</span></div>
+      <button class="btn" data-id="${esc(i.id)}">Editar</button></div>`;
+  }).join('') || '<p class="sub">Agenda vazia.</p>';
+  $('#listaAgenda').querySelectorAll('button').forEach(b => b.onclick = () => abrirForm(agenda.find(x => x.id === b.dataset.id)));
+}
+
+$('#fDias').innerHTML = DIAS.map((d, i) => `<label><input type="checkbox" value="${i}">${d}</label>`).join('');
+
+function abrirForm(item) {
+  editando = item ? { ...item } : { id: 'i' + Date.now(), nome: '', dias: [], inicio: '18:00', fim: '19:00', nota: '', lat: CENTRO[0], lon: CENTRO[1], novo: true };
+  $('#formAgenda').hidden = false; $('#formVazio').hidden = true;
+  $('#formTitulo').textContent = editando.novo ? 'Novo item' : 'Editar';
+  $('#fNome').value = editando.nome; $('#fInicio').value = editando.inicio; $('#fFim').value = editando.fim; $('#fNota').value = editando.nota || '';
+  $('#fDias').querySelectorAll('input').forEach(c => c.checked = editando.dias.includes(+c.value));
+  $('#btnApagar').hidden = !!editando.novo;
+  setTimeout(() => {
+    mapas.agenda.invalidateSize();
+    mapas.agenda.setView([editando.lat, editando.lon], 15);
+    if (marcadorAgenda) marcadorAgenda.setLatLng([editando.lat, editando.lon]);
+    else marcadorAgenda = L.marker([editando.lat, editando.lon]).addTo(mapas.agenda);
+  }, 50);
+}
+mapas.agenda.on('click', e => {
+  if (!editando) return;
+  editando.lat = +e.latlng.lat.toFixed(5); editando.lon = +e.latlng.lng.toFixed(5);
+  if (marcadorAgenda) marcadorAgenda.setLatLng(e.latlng); else marcadorAgenda = L.marker(e.latlng).addTo(mapas.agenda);
+});
+function fecharForm() { editando = null; $('#formAgenda').hidden = true; $('#formVazio').hidden = false; $('#formTitulo').textContent = 'Editar'; }
+$('#formAgenda').onsubmit = e => {
+  e.preventDefault();
+  const item = { id: editando.id, nome: $('#fNome').value.trim(), dias: [...$('#fDias').querySelectorAll('input:checked')].map(c => +c.value),
+    inicio: $('#fInicio').value, fim: $('#fFim').value, nota: $('#fNota').value.trim(), lat: editando.lat, lon: editando.lon };
+  const idx = agenda.findIndex(x => x.id === item.id);
+  if (idx >= 0) agenda[idx] = item; else agenda.push(item);
+  salvarAgenda(); fecharForm();
+};
+$('#btnApagar').onclick = () => {
+  if (!confirm('Apagar "' + editando.nome + '" da agenda?')) return;
+  agenda = agenda.filter(x => x.id !== editando.id); salvarAgenda(); fecharForm();
+};
+$('#btnCancelar').onclick = fecharForm;
+$('#btnNovo').onclick = () => abrirForm(null);
+$('#btnRestaurar').onclick = () => {
+  if (!confirm('Voltar pra agenda original? Suas mudanças neste navegador serão perdidas.')) return;
+  agenda = structuredClone(agendaPadrao); ls.del('radar.agenda'); salvarAgenda(); fecharForm();
+};
+$('#btnExportar').onclick = () => {
+  const blob = new Blob([JSON.stringify({ _sobre: 'Agenda exportada do Radar Corrida. dias: 0=dom ... 6=sáb.', itens: agenda }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'agenda.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
+// ---------- início ----------
+(async () => {
+  try {
+    PONTOS = (await carregarJSON('pontos.json')).pontos;
+    agendaPadrao = (await carregarJSON('agenda.json')).itens;
+  } catch (e) {
+    document.querySelector('main').insertAdjacentHTML('afterbegin', '<div class="aviso">Não consegui ler os arquivos do app. Abra pelo atalho <b>abrir.bat</b> (o navegador não lê arquivos soltos direto do disco).</div>');
+    return;
+  }
+  agenda = ls.get('radar.agenda', null) || structuredClone(agendaPadrao);
+  atualizarCamadaTrafego();
+  PONTOS.forEach(p => L.circleMarker([p.lat, p.lon], { radius: 4, weight: 1, color: '#fff', fillColor: '#8a867e', fillOpacity: .9 }).bindTooltip(esc(p.nome)).addTo(camadaPontosAgora));
+  desenharListaAgenda();
+  desenharMarcadoresAgenda();
+  atualizarVeredito();
+  await carregarHistorico();
+  document.querySelector(`nav button[data-aba="${location.hash.slice(1)}"]`)?.click();
+  setInterval(() => { atualizarVeredito(); desenharMarcadoresAgenda(); }, 60e3);
+})();
+</script>
+</body>
+</html>
