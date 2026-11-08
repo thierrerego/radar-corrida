@@ -1,35 +1,179 @@
 {
   "_sobre": "Pontos onde o robô mede o trânsito no TomTom. Coordenadas tiradas do OpenStreetMap. O TomTom 'gruda' cada ponto na rua mais próxima.",
   "pontos": [
-    { "id": "rodoviaria",     "nome": "Rodoviária",                        "lat": -12.12699, "lon": -45.01832 },
-    { "id": "aeroporto",      "nome": "Acesso ao aeroporto",               "lat": -12.07948, "lon": -45.00971 },
-    { "id": "ufob",           "nome": "UFOB (campus)",                     "lat": -12.14839, "lon": -45.02052 },
-    { "id": "ufob-reitoria",  "nome": "UFOB Reitoria / BR-135",            "lat": -12.15050, "lon": -45.00311 },
-    { "id": "ifba",           "nome": "IFBA",                              "lat": -12.15214, "lon": -45.00599 },
-    { "id": "uneb",           "nome": "UNEB Campus IX",                    "lat": -12.14295, "lon": -44.96261 },
-    { "id": "fasb",           "nome": "FASB (BR-135, Barreiras Sul)",      "lat": -12.17458, "lon": -45.01151 },
-    { "id": "dom-pedro",      "nome": "Faculdade Dom Pedro II (Av. ACM)",  "lat": -12.14774, "lon": -44.99471 },
-    { "id": "ftc",            "nome": "FTC (Rua 24 de Outubro)",           "lat": -12.14646, "lon": -44.99711 },
-    { "id": "hosp-oeste",     "nome": "Hospital do Oeste",                 "lat": -12.12553, "lon": -45.00039 },
-    { "id": "hosp-central",   "nome": "Hospital Central",                  "lat": -12.14300, "lon": -44.99588 },
-    { "id": "atacadao",       "nome": "Atacadão (BR-242)",                 "lat": -12.14017, "lon": -44.96285 },
-    { "id": "assai",          "nome": "Assaí (Av. Clériston Andrade)",     "lat": -12.14234, "lon": -44.98043 },
-    { "id": "castro-alves",   "nome": "Praça Castro Alves (Centro)",       "lat": -12.14787, "lon": -44.99754 },
-    { "id": "centro",         "nome": "Centro",                            "lat": -12.14680, "lon": -44.99681 },
-    { "id": "cleriston-1",    "nome": "Av. Clériston Andrade (Centro)",    "lat": -12.14264, "lon": -44.98423 },
-    { "id": "cleriston-2",    "nome": "Av. Clériston Andrade (Rio Grande)","lat": -12.14195, "lon": -44.97147 },
-    { "id": "ahylon",         "nome": "Av. Ahylon Macêdo",                 "lat": -12.13522, "lon": -45.01350 },
-    { "id": "br242-leste",    "nome": "BR-242 (Mimoso)",                   "lat": -12.14160, "lon": -44.96130 },
-    { "id": "br242-oeste",    "nome": "BR-242 (Morada Nobre)",             "lat": -12.12177, "lon": -45.03635 },
-    { "id": "parque-expo",    "nome": "Parque de Exposições",              "lat": -12.14123, "lon": -44.99941 },
-    { "id": "vila-brasil",    "nome": "Vila Brasil",                       "lat": -12.13964, "lon": -44.98938 },
-    { "id": "barreirinhas",   "nome": "Barreirinhas",                      "lat": -12.13719, "lon": -45.00668 },
-    { "id": "morada-nobre",   "nome": "Morada Nobre",                      "lat": -12.13623, "lon": -45.01731 },
-    { "id": "santa-luzia",    "nome": "Santa Luzia",                       "lat": -12.13171, "lon": -44.97553 },
-    { "id": "recanto",        "nome": "Recanto dos Pássaros",              "lat": -12.15494, "lon": -45.00651 },
-    { "id": "vila-rica",      "nome": "Vila Rica",                         "lat": -12.12632, "lon": -45.01295 },
-    { "id": "ouro-branco",    "nome": "Jardim Ouro Branco",                "lat": -12.14850, "lon": -44.98375 },
-    { "id": "sao-pedro",      "nome": "São Pedro",                         "lat": -12.13025, "lon": -45.00709 },
-    { "id": "renato-goncalves","nome": "Rua Dr. Renato Gonçalves",         "lat": -12.15312, "lon": -44.98964 }
+    {
+      "id": "rodoviaria",
+      "nome": "Rodoviária",
+      "lat": -12.12699,
+      "lon": -45.01832
+    },
+    {
+      "id": "ufob",
+      "nome": "UFOB (campus, Rua Embaúba)",
+      "lat": -12.15075,
+      "lon": -45.02077
+    },
+    {
+      "id": "ufob-reitoria",
+      "nome": "UFOB Reitoria / BR-135",
+      "lat": -12.1505,
+      "lon": -45.00311
+    },
+    {
+      "id": "ifba",
+      "nome": "IFBA",
+      "lat": -12.15214,
+      "lon": -45.00599
+    },
+    {
+      "id": "uneb",
+      "nome": "UNEB Campus IX",
+      "lat": -12.14295,
+      "lon": -44.96261
+    },
+    {
+      "id": "fasb",
+      "nome": "FASB (BR-135, Barreiras Sul)",
+      "lat": -12.17458,
+      "lon": -45.01151
+    },
+    {
+      "id": "dom-pedro",
+      "nome": "Faculdade Dom Pedro II (Av. ACM)",
+      "lat": -12.14774,
+      "lon": -44.99471
+    },
+    {
+      "id": "ftc",
+      "nome": "FTC (Rua 24 de Outubro)",
+      "lat": -12.14646,
+      "lon": -44.99711
+    },
+    {
+      "id": "hosp-oeste",
+      "nome": "Hospital do Oeste",
+      "lat": -12.12553,
+      "lon": -45.00039
+    },
+    {
+      "id": "hosp-central",
+      "nome": "Hospital Central",
+      "lat": -12.143,
+      "lon": -44.99588
+    },
+    {
+      "id": "atacadao",
+      "nome": "Atacadão (BR-242)",
+      "lat": -12.14017,
+      "lon": -44.96285
+    },
+    {
+      "id": "assai",
+      "nome": "Assaí (Av. Clériston Andrade)",
+      "lat": -12.14234,
+      "lon": -44.98043
+    },
+    {
+      "id": "castro-alves",
+      "nome": "Praça Castro Alves (Centro)",
+      "lat": -12.14787,
+      "lon": -44.99754
+    },
+    {
+      "id": "centro",
+      "nome": "Centro",
+      "lat": -12.1468,
+      "lon": -44.99681
+    },
+    {
+      "id": "cleriston-1",
+      "nome": "Av. Clériston Andrade (Centro)",
+      "lat": -12.14264,
+      "lon": -44.98423
+    },
+    {
+      "id": "cleriston-2",
+      "nome": "Av. Clériston Andrade (Rio Grande)",
+      "lat": -12.14195,
+      "lon": -44.97147
+    },
+    {
+      "id": "ahylon",
+      "nome": "Av. Ahylon Macêdo",
+      "lat": -12.13522,
+      "lon": -45.0135
+    },
+    {
+      "id": "br242-leste",
+      "nome": "BR-242 (Mimoso)",
+      "lat": -12.1416,
+      "lon": -44.9613
+    },
+    {
+      "id": "br242-oeste",
+      "nome": "BR-242 (Morada Nobre)",
+      "lat": -12.12177,
+      "lon": -45.03635
+    },
+    {
+      "id": "parque-expo",
+      "nome": "Parque de Exposições",
+      "lat": -12.14123,
+      "lon": -44.99941
+    },
+    {
+      "id": "vila-brasil",
+      "nome": "Vila Brasil",
+      "lat": -12.13964,
+      "lon": -44.98938
+    },
+    {
+      "id": "barreirinhas",
+      "nome": "Barreirinhas",
+      "lat": -12.13719,
+      "lon": -45.00668
+    },
+    {
+      "id": "morada-nobre",
+      "nome": "Morada Nobre",
+      "lat": -12.13623,
+      "lon": -45.01731
+    },
+    {
+      "id": "santa-luzia",
+      "nome": "Santa Luzia",
+      "lat": -12.13171,
+      "lon": -44.97553
+    },
+    {
+      "id": "recanto",
+      "nome": "Recanto dos Pássaros",
+      "lat": -12.15494,
+      "lon": -45.00651
+    },
+    {
+      "id": "vila-rica",
+      "nome": "Vila Rica",
+      "lat": -12.12632,
+      "lon": -45.01295
+    },
+    {
+      "id": "ouro-branco",
+      "nome": "Jardim Ouro Branco",
+      "lat": -12.1485,
+      "lon": -44.98375
+    },
+    {
+      "id": "sao-pedro",
+      "nome": "São Pedro",
+      "lat": -12.13025,
+      "lon": -45.00709
+    },
+    {
+      "id": "renato-goncalves",
+      "nome": "Rua Dr. Renato Gonçalves",
+      "lat": -12.15312,
+      "lon": -44.98964
+    }
   ]
 }

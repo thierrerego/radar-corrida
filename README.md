@@ -2,7 +2,7 @@
 
 Mapa de calor do movimento em **Barreiras (BA)** pra decidir se vale sair de casa pra rodar de InDrive.
 
-- **Agora:** trânsito ao vivo do TomTom nos 30 pontos de `pontos.json`, com mapa de calor, ranking e um veredito ("Vale sair", "Talvez", "Fraco").
+- **Agora:** trânsito ao vivo do TomTom nos 29 pontos de `pontos.json`, com mapa de calor, ranking e um veredito ("Vale sair", "Talvez", "Fraco").
 - **Melhores horários:** grade dia × hora com o movimento médio, montada com o histórico que o robô guarda.
 - **Agenda:** pontos e horários previsíveis (saída de faculdade, troca de turno, rodoviária, eventos). Os iniciais são palpites, edite pelo app.
 
@@ -11,7 +11,7 @@ Dois cliques em `abrir.bat`. Ele puxa os dados novos do GitHub, liga um servidor
 Na primeira vez, clique em **⚙ Chave TomTom** e cole sua chave (conta grátis em developer.tomtom.com).
 
 ## O robô (GitHub Actions)
-`.github/workflows/coletar.yml` roda `coletor/coletar.mjs` de 30 em 30 min. Ele mede os 30 pontos e grava uma linha por ponto em `dados/AAAA-MM.csv`:
+`.github/workflows/coletar.yml` roda `coletor/coletar.mjs` de 30 em 30 min. Ele mede os 29 pontos e grava uma linha por ponto em `dados/AAAA-MM.csv`:
 
 ```
 quando,ponto,vel,vel_livre,confianca
@@ -27,5 +27,5 @@ $env:TOMTOM_KEY = "sua-chave"; node coletor/coletar.mjs
 ```
 
 ## Limites grátis
-- TomTom: 2.500 consultas por dia. O robô usa ~1.440 (30 pontos × 48 vezes) e cada "Medir agora" usa 30.
+- TomTom: 2.500 consultas por dia. O robô usa ~1.400 (29 pontos × 48 vezes) e cada "Medir agora" usa 29.
 - GitHub Actions: o repo é público, então os minutos são ilimitados. A chave do TomTom fica no secret, invisível pra quem vê o repo.
