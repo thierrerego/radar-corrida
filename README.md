@@ -28,4 +28,4 @@ $env:TOMTOM_KEY = "sua-chave"; node coletor/coletar.mjs
 
 ## Limites grátis
 - TomTom: 2.500 consultas por dia. O robô usa ~1.440 (30 pontos × 48 vezes) e cada "Medir agora" usa 30.
-- GitHub Actions (repo privado): 2.000 min/mês na conta toda. O robô usa ~1.440.
+- GitHub Actions: o repo é público, então os minutos são ilimitados. A chave do TomTom fica no secret, invisível pra quem vê o repo.
