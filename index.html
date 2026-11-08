@@ -68,6 +68,26 @@ form.edit input[type=text], form.edit input[type=time], form.edit input[type=pas
 .dias label { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; color: var(--ink); }
 dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); max-width: 460px; width: calc(100% - 32px); }
 dialog::backdrop { background: rgba(0,0,0,.45); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.kpi .v { font-size: 22px; font-weight: 700; }
+.kpi .r { font-size: 12px; color: var(--muted); }
+.insights li { margin: 8px 0; }
+.barras-v { display: flex; align-items: flex-end; gap: 3px; height: 180px; padding-top: 18px; }
+.barras-v .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+.barras-v .b { width: 100%; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; }
+.barras-v .b.fraco { background: var(--vazio); }
+.barras-v .lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.barras-v .val { font-size: 10px; color: var(--ink2); margin-bottom: 2px; white-space: nowrap; }
+.barra-h { display: grid; grid-template-columns: 110px 1fr 120px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
+.barra-h .trilho { background: var(--vazio); border-radius: 4px; height: 12px; }
+.barra-h .enche { background: var(--accent); height: 100%; border-radius: 4px; }
+.barra-h .num { text-align: right; color: var(--ink2); }
+table.tab { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.tab th { text-align: left; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line); padding: 6px 8px; white-space: nowrap; }
+table.tab td { border-bottom: 1px solid var(--line); padding: 6px 8px; }
+table.tab td.n, table.tab th.n { text-align: right; white-space: nowrap; }
+select.btn { padding: 6px 10px; }
 .aviso { background: color-mix(in srgb, var(--medio) 15%, transparent); border: 1px solid var(--medio); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
 </style>
 </head>
@@ -80,6 +100,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   <button data-aba="agora" class="ativo">Agora</button>
   <button data-aba="horarios">Melhores horários</button>
   <button data-aba="agenda">Agenda</button>
+  <button data-aba="corridas">Minhas corridas</button>
 </nav>
 <main>
   <!-- ===== AGORA ===== -->
@@ -168,6 +189,68 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
       </div>
     </div>
   </section>
+
+  <!-- ===== MINHAS CORRIDAS ===== -->
+  <section id="corridas">
+    <div id="corSemDados" class="aviso" hidden>Ainda não tem histórico de corridas neste PC. Rode <b>ferramentas/puxar-historico-indrive.mjs</b> e depois <b>ferramentas/geocodificar.mjs</b>.</div>
+    <div id="corConteudo" hidden>
+      <div class="linha" style="margin-bottom:12px">
+        <label class="sub">Período:
+          <select id="corPeriodo" class="btn">
+            <option value="tudo">Tudo</option>
+            <option value="90">Últimos 90 dias</option>
+            <option value="30">Últimos 30 dias</option>
+          </select>
+        </label>
+        <span class="sub" id="corInfo"></span>
+      </div>
+      <div class="kpis" id="corKpis"></div>
+      <div class="card"><h2>O que os números dizem</h2><ul id="corInsights" class="insights"></ul></div>
+      <div class="card">
+        <h2>Quanto rende cada horário</h2>
+        <div class="linha" style="margin-bottom:8px">
+          <label class="sub">Mostrar:
+            <select id="corMetricaHora" class="btn">
+              <option value="rh">R$ por hora trabalhada</option>
+              <option value="rkm">R$ por km</option>
+              <option value="n">Número de corridas</option>
+              <option value="canc">Cancelamentos (%)</option>
+            </select>
+          </label>
+        </div>
+        <div id="corHoras" class="barras-v"></div>
+        <p class="sub">"Hora trabalhada" é estimada: corridas com menos de 60 min de intervalo contam como o mesmo turno.</p>
+      </div>
+      <div class="card">
+        <h2>R$ por hora trabalhada · dia × horário</h2>
+        <div class="tabela-wrap"><table class="grade" id="corGrade"></table></div>
+        <div class="legenda">rende menos <span class="rampa" id="corRampa"></span> rende mais · cinza = pouco dado (menos de 1h trabalhada)</div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>R$ por km pelo tamanho da corrida</h2><div id="corFaixas"></div></div>
+        <div class="card"><h2>Por dia da semana</h2><div id="corDias"></div></div>
+      </div>
+      <div class="card">
+        <div class="linha" style="justify-content:space-between;margin-bottom:10px">
+          <h2 style="margin:0">Onde você pega passageiro</h2>
+          <div class="linha">
+            <select id="corFiltroDia" class="btn"><option value="">Todos os dias</option><option value="util">Seg a sex</option><option value="fds">Sáb e dom</option></select>
+            <select id="corFiltroHora" class="btn">
+              <option value="">O dia todo</option><option value="6-11">Manhã (6h–11h)</option><option value="11-14">Almoço (11h–14h)</option>
+              <option value="14-18">Tarde (14h–18h)</option><option value="18-23">Noite (18h–23h)</option><option value="23-6">Madrugada (23h–6h)</option>
+            </select>
+          </div>
+        </div>
+        <div id="mapaCorridas" class="mapa"></div>
+        <p class="sub" id="corMapaInfo"></p>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>Bairros onde você pega (embarque)</h2><div class="tabela-wrap"><table class="tab" id="corBairrosEmb"></table></div></div>
+        <div class="card"><h2>Onde é bom terminar a corrida</h2><p class="sub">Tempo até a próxima corrida depois de deixar o passageiro em cada bairro (mesmo turno).</p><div class="tabela-wrap"><table class="tab" id="corBairrosDest"></table></div></div>
+      </div>
+      <div class="card"><h2>Mês a mês</h2><div class="tabela-wrap"><table class="tab" id="corMeses"></table></div></div>
+    </div>
+  </section>
 </main>
 
 <dialog id="dlgConfig">
@@ -226,6 +309,7 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   setTimeout(() => {
     Object.values(mapas).forEach(m => m.invalidateSize());
     if (b.dataset.aba === 'horarios' && hist && celulaSel) selecionarCelula(...celulaSel);
+    if (b.dataset.aba === 'corridas' && window.redesenharMapaCorridas) redesenharMapaCorridas();
   }, 50);
   history.replaceState(null, '', '#' + b.dataset.aba);
 });
@@ -572,9 +656,11 @@ $('#btnExportar').onclick = () => {
   desenharMarcadoresAgenda();
   atualizarVeredito();
   await carregarHistorico();
+  if (window.carregarCorridas) await carregarCorridas();
   document.querySelector(`nav button[data-aba="${location.hash.slice(1)}"]`)?.click();
   setInterval(() => { atualizarVeredito(); desenharMarcadoresAgenda(); }, 60e3);
 })();
 </script>
+<script src="corridas.js"></script>
 </body>
 </html>
